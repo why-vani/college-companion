@@ -4,6 +4,25 @@ import json
 import os
 from datetime import datetime
 
+# --- 1. SETTINGS & PASSWORD ---
+ADMIN_PASSWORD = "nmamit_admin"  # Change this to your secret password!
+
+# Initialize session state for login if it doesn't exist
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+# --- 2. SIDEBAR LOGIN ---
+st.sidebar.title("🔐 Admin Access")
+pwd_input = st.sidebar.text_input("Enter Password", type="password")
+
+if pwd_input == ADMIN_PASSWORD:
+    st.session_state.logged_in = True
+    st.sidebar.success("Logged In! You can now edit.")
+else:
+    st.session_state.logged_in = False
+    if pwd_input != "":
+        st.sidebar.error("Incorrect Password")
+
 # use this to make it phone friendly
 st.set_page_config(
     page_title="College Companion",
@@ -64,63 +83,89 @@ if choice == "Dashboard":
     else:
         st.success("All caught up! No pending assignments.")
 
-# --- TIMETABLE ---
+# 1. SIDEBAR LOGIN (At the top of your script)
+ADMIN_PASSWORD = "nmamit_admin" 
+
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+st.sidebar.title("🔐 Admin Access")
+pwd_input = st.sidebar.text_input("Enter Password", type="password")
+st.session_state.logged_in = (pwd_input == ADMIN_PASSWORD)
+
+# ... (Dashboard code stays the same) ...
+
+# 2. THE PROTECTED TIMETABLE SECTION (Replace your old one with this)
 elif choice == "Timetable":
-    st.subheader("🗓️ NMAMIT Semester II Timetable (Section Y)")
+    st.subheader("🗓️ NMAMIT Weekly Schedule")
     
-    # Create the DataFrame
     df_timetable = pd.DataFrame(data['timetable'])
     
-    # Display the table with specific formatting
-    st.write("Click any cell to edit your classes:")
+    # This checks if you are logged in. If not, 'disabled' becomes True.
+    is_disabled = not st.session_state.logged_in
+    
+    # The table is now locked for anyone without the password
     edited_df = st.data_editor(
         df_timetable, 
         hide_index=True, 
         use_container_width=True,
-        column_config={
-            "Day": st.column_config.TextColumn("Day", disabled=True),
-            "1.00-1.55": st.column_config.TextColumn("Lunch Break", disabled=True)
-        }
+        disabled=is_disabled 
     )
     
-    if st.button("💾 Save All Changes"):
-        data['timetable'] = edited_df.to_dict('records')
-        save_data(data)
-        st.success("Timetable updated successfully!")
+    # Only show the Save button if logged in
+    if st.session_state.logged_in:
+        if st.button("💾 Save All Changes"):
+            data['timetable'] = edited_df.to_dict('records')
+            save_data(data)
+            st.success("Timetable updated successfully!")
+    else:
+        st.warning("⚠️ View Only Mode. Enter password in sidebar to edit.")
 
-    st.divider()
-    st.info("💡 Note: (SL) stands for Self Learning sessions.")
-# --- ASSIGNMENTS & TESTS ---
+# --- ASSIGNMENTS & TESTS SECTION ---
 elif choice == "Assignments & Tests":
     st.subheader("📝 Assignments, Homework & Tests")
     
-    with st.form("task_form"):
-        col1, col2 = st.columns(2)
-        with col1:
-            name = st.text_input("Task Title")
-            t_type = st.selectbox("Category", ["Assignment", "Homework", "Test", "Lab Record"])
-        with col2:
-            date = st.date_input("Due Date")
-            submit = st.form_submit_button("Add Task")
+    # 1. Input Form (ONLY visible if logged in)
+    if st.session_state.logged_in:
+        with st.form("task_form"):
+            col1, col2 = st.columns(2)
+            with col1:
+                name = st.text_input("Task Title")
+                t_type = st.selectbox("Category", ["Assignment", "Homework", "Test", "Lab Record"])
+            with col2:
+                date = st.date_input("Due Date")
+                submit = st.form_submit_button("Add Task")
 
-        if submit and name:
-            data['tasks'].append({"name": name, "type": t_type, "date": str(date), "done": False})
+            if submit and name:
+                data['tasks'].append({"name": name, "type": t_type, "date": str(date), "done": False})
+                save_data(data)
+                st.success("Task added!")
+                st.rerun()
+    else:
+        st.info("ℹ️ Login via the sidebar to add new assignments or tests.")
+
+    # 2. Display the List (Always visible to everyone)
+    if data['tasks']:
+        st.markdown("### Current Deadlines")
+        df_tasks = pd.DataFrame(data['tasks'])
+        st.dataframe(df_tasks, use_container_width=True, hide_index=True)
+        
+        # Admin-only delete option
+        if st.session_state.logged_in and st.button("🗑️ Clear All Tasks"):
+            data['tasks'] = []
             save_data(data)
             st.rerun()
 
-    if data['tasks']:
-        df = pd.DataFrame(data['tasks'])
-        st.dataframe(df, use_container_width=True)
-        if st.button("Clear All Completed"):
-            # Logic to clear can be added here
-            pass
-
-# --- LAB RECORDS ---
+# --- LAB RECORD WRITER SECTION ---
 elif choice == "Lab Record Writer":
     st.subheader("🧪 Lab Record Draftsman")
-    lab_name = st.text_input("Experiment Name")
-    content = st.text_area("Write your record here...", height=300)
     
-    if st.button("Save Draft"):
-        st.info("Draft ready for download!")
-        st.download_button("Download .txt", content, file_name=f"{lab_name}.txt")
+    if st.session_state.logged_in:
+        lab_name = st.text_input("Experiment Name")
+        content = st.text_area("Write your record here...", height=300)
+        
+        if st.button("Save Draft"):
+            st.info("Draft ready for download!")
+            st.download_button("Download .txt", content, file_name=f"{lab_name}.txt")
+    else:
+        st.warning("🔒 This feature is locked. Please log in to write and save lab records.")
