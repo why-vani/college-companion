@@ -26,13 +26,29 @@ choice = st.sidebar.selectbox("Navigation", menu)
 
 # --- DASHBOARD ---
 if choice == "Dashboard":
-    st.subheader(f"📅 Today: {datetime.now().strftime('%A, %d %B')}")
-    # Filter pending tasks
+    st.subheader(f"📅 Today: {datetime.now().strftime('%A, %d %B %Y')}")
+    
+    # 1. Show the Full Timetable Grid
+    st.markdown("### 🏫 Your Weekly Schedule")
+    if data['timetable']:
+        df_dash = pd.DataFrame(data['timetable'])
+        # Display as a static table (not editable) for a cleaner dashboard look
+        st.table(df_dash) 
+    else:
+        st.info("No timetable found. Go to the 'Timetable' tab to add your classes!")
+
+    st.divider()
+
+    # 2. Show Pending Tasks
+    st.markdown("### 🔔 Upcoming Deadlines")
     pending = [t for t in data['tasks'] if not t.get('done', False)]
-    st.metric("Pending Tasks", len(pending))
+    
     if pending:
-        st.write("Upcoming Deadlines:")
-        st.table(pd.DataFrame(pending).head(3))
+        col1, col2 = st.columns([1, 3])
+        col1.metric("Pending", len(pending))
+        st.dataframe(pd.DataFrame(pending), use_container_width=True, hide_index=True)
+    else:
+        st.success("All caught up! No pending assignments.")
 
 # --- TIMETABLE ---
 elif choice == "Timetable":
