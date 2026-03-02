@@ -18,7 +18,7 @@ def save_data(data):
 data = load_data()
 
 # --- UI SETUP ---
-st.set_page_config(page_title="College Companion", icon="🎓")
+st.set_page_config(page_title="College Companion", page_icon=":")
 st.title("🎓 My College Hub")
 
 menu = ["Dashboard", "Timetable", "Assignments & Tests", "Lab Record Writer"]
