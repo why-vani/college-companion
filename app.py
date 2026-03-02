@@ -18,7 +18,7 @@ def save_data(data):
 data = load_data()
 
 # --- 2. SETTINGS & AUTHENTICATION ---
-ADMIN_PASSWORD = "nmamit_admin" # You can change this later
+ADMIN_PASSWORD = "vanilovesjews" # You can change this later
 
 st.set_page_config(
     page_title="NMAMIT Companion", 
