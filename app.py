@@ -4,6 +4,14 @@ import json
 import os
 from datetime import datetime
 
+# use this to make it phone friendly
+st.set_page_config(
+    page_title="College Companion",
+    page_icon="🎓",
+    layout="wide", # This helps the timetable fit on the screen
+    initial_sidebar_state="collapsed" # Hides the sidebar by default on mobile
+)
+
 # --- DATA HANDLING ---
 def load_data():
     if os.path.exists('data.json'):
