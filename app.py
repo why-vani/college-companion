@@ -34,31 +34,18 @@ choice = st.sidebar.selectbox("Navigation", menu)
 
 # --- DASHBOARD ---
 if choice == "Dashboard":
-    # This is the "Today's Date" line I mentioned
     st.subheader(f"📅 Today: {datetime.now().strftime('%A, %d %B %Y')}")
     
-    # --- ADD THE NEW LOGIC HERE ---
-    now_time = datetime.now().strftime("%H.%M")
-    current_day = datetime.now().strftime("%a").upper() # Gets MON, TUE, etc.
-    
-    st.write(f"⏰ **Current Time:** {now_time}")
-    
-    # Check if today is a school day (MON-FRI)
-    today_schedule = [row for row in data['timetable'] if row['Day'] == current_day]
-    
-    if today_schedule:
-        st.success(f"📖 Showing your **{current_day}** schedule from NMAMIT.")
-    else:
-        st.info("No classes scheduled for today. Enjoy your break! 🎉")
-    # --------------------------------
-    
-    st.divider()
-    
-    # Show the Full Timetable Grid
-    st.markdown("### 🏫 Weekly Schedule")
+    # 1. Show the Full Timetable Grid
+    st.markdown("### 🏫 Your Weekly Schedule")
     if data['timetable']:
-        st.table(pd.DataFrame(data['timetable']))
+        df_dash = pd.DataFrame(data['timetable'])
+        # Display as a static table (not editable) for a cleaner dashboard look
+        st.table(df_dash) 
+    else:
+        st.info("No timetable found. Go to the 'Timetable' tab to add your classes!")
 
+    st.divider()
     # 2. Show Pending Tasks
     st.markdown("### 🔔 Upcoming Deadlines")
     pending = [t for t in data['tasks'] if not t.get('done', False)]
