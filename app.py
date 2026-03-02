@@ -17,8 +17,9 @@ def save_data(data):
 
 data = load_data()
 
-# --- 2. SETTINGS & AUTHENTICATION ---
-ADMIN_PASSWORD = "vanilovesjews" # You can change this later
+# lol nigga u really expect me to be this dumb 😭
+# This line now pulls the password from the hidden 'Secrets' menu
+ADMIN_PASSWORD = st.secrets["password"]
 
 st.set_page_config(
     page_title="NMAMIT Companion", 
