@@ -36,19 +36,22 @@ if choice == "Dashboard":
 
 # --- TIMETABLE ---
 elif choice == "Timetable":
-    st.subheader("🏫 Class Schedule")
-    days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    day_choice = st.selectbox("Select Day", days)
+    st.subheader("📅 Weekly Class Schedule")
     
-    # Simple input for classes
-    classes = st.text_area(f"Classes for {day_choice} (comma separated)", 
-                          value=data['timetable'].get(day_choice, ""))
+    # Convert list to DataFrame for easy viewing
+    df_timetable = pd.DataFrame(data['timetable'])
     
-    if st.button("Update Timetable"):
-        data['timetable'][day_choice] = classes
-        save_data(data)
-        st.success(f"Schedule for {day_choice} updated!")
+    if df_timetable.empty:
+        df_timetable = pd.DataFrame(columns=["Day", "Subject", "Start", "End"])
 
+    # This creates an editable table
+    edited_df = st.data_editor(df_timetable, num_rows="dynamic", use_container_width=True)
+    
+    if st.button("Save Timetable Changes"):
+        # Convert back to list of dictionaries to save in JSON
+        data['timetable'] = edited_df.to_dict('records')
+        save_data(data)
+        st.success("Timetable saved successfully!")
 # --- ASSIGNMENTS & TESTS ---
 elif choice == "Assignments & Tests":
     st.subheader("📝 Assignments, Homework & Tests")
