@@ -34,18 +34,25 @@ choice = st.sidebar.selectbox("Navigation", menu)
 
 # --- DASHBOARD ---
 if choice == "Dashboard":
-    st.subheader(f"📅 Today: {datetime.now().strftime('%A, %d %B %Y')}")
+    st.subheader(f"📅 {datetime.now().strftime('%A, %d %B')}")
     
-    # 1. Show the Full Timetable Grid
-    st.markdown("### 🏫 Your Weekly Schedule")
-    if data['timetable']:
-        df_dash = pd.DataFrame(data['timetable'])
-        # Display as a static table (not editable) for a cleaner dashboard look
-        st.table(df_dash) 
-    else:
-        st.info("No timetable found. Go to the 'Timetable' tab to add your classes!")
+    current_day = datetime.now().strftime("%a").upper() # Gets MON, TUE, etc.
+    df_timetable = pd.DataFrame(data['timetable'])
 
+    # Filter to show ONLY today's classes
+    today_data = df_timetable[df_timetable['Day'] == current_day]
+
+    if not today_data.empty:
+        st.markdown(f"### 📖 Today's Classes ({current_day})")
+        # Transpose the table so times are in rows (perfect for phone scrolling)
+        df_today = today_data.set_index('Day').T
+        st.dataframe(df_today, use_container_width=True)
+    else:
+        st.info("No classes scheduled for today! 🎉")
+    
     st.divider()
+    with st.expander("🔍 View Full Weekly Schedule"):
+        st.dataframe(df_timetable, hide_index=True)
     # 2. Show Pending Tasks
     st.markdown("### 🔔 Upcoming Deadlines")
     pending = [t for t in data['tasks'] if not t.get('done', False)]
