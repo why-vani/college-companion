@@ -36,22 +36,30 @@ if choice == "Dashboard":
 
 # --- TIMETABLE ---
 elif choice == "Timetable":
-    st.subheader("📅 Weekly Class Schedule")
+    st.subheader("🗓️ NMAMIT Semester II Timetable (Section Y)")
     
-    # Convert list to DataFrame for easy viewing
+    # Create the DataFrame
     df_timetable = pd.DataFrame(data['timetable'])
     
-    if df_timetable.empty:
-        df_timetable = pd.DataFrame(columns=["Day", "Subject", "Start", "End"])
-
-    # This creates an editable table
-    edited_df = st.data_editor(df_timetable, num_rows="dynamic", use_container_width=True)
+    # Display the table with specific formatting
+    st.write("Click any cell to edit your classes:")
+    edited_df = st.data_editor(
+        df_timetable, 
+        hide_index=True, 
+        use_container_width=True,
+        column_config={
+            "Day": st.column_config.TextColumn("Day", disabled=True),
+            "1.00-1.55": st.column_config.TextColumn("Lunch Break", disabled=True)
+        }
+    )
     
-    if st.button("Save Timetable Changes"):
-        # Convert back to list of dictionaries to save in JSON
+    if st.button("💾 Save All Changes"):
         data['timetable'] = edited_df.to_dict('records')
         save_data(data)
-        st.success("Timetable saved successfully!")
+        st.success("Timetable updated successfully!")
+
+    st.divider()
+    st.info("💡 Note: (SL) stands for Self Learning sessions.")
 # --- ASSIGNMENTS & TESTS ---
 elif choice == "Assignments & Tests":
     st.subheader("📝 Assignments, Homework & Tests")
